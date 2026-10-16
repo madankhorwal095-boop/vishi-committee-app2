@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="hi"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>विशी समिति किश्त प्रबंधन सिस्टम</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.3.1/umd/react.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.3.1/umd/react-dom.production.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+:root{--n:#0b1f4b;--g:#c9a227;--bg:#f3f5fa;--t:#1a2238;--c:#fff;--bd:#d9deea;--ok:#1b7a43;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0c1220;--c:#162038;--t:#e8ecf5;--bd:#2a3556}}
+:root[data-theme="dark"]{--bg:#0c1220;--c:#162038;--t:#e8ecf5;--bd:#2a3556}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--t);font:17px/1.5 system-ui,"Noto Sans Devanagari",Mangal,sans-serif}
+header{background:var(--n);color:var(--g);padding:14px 16px;font-weight:700;font-size:19px;border-bottom:4px solid var(--g)}
+main{max-width:900px;margin:0 auto;padding:14px 12px 100px}
+nav{position:fixed;left:0;right:0;bottom:0;background:var(--n);display:flex;padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;background:none;border:0;color:#cfd6ea;padding:8px 2px;font-size:12px}nav button span{display:block;font-size:20px}nav .on{color:var(--g);font-weight:700}
+.card{background:var(--c);border:1px solid var(--bd);border-radius:14px;padding:14px;margin-bottom:12px;box-shadow:0 1px 4px #0001}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}.grid .card{margin:0;border-top:4px solid var(--g)}
+.big{font-size:24px;font-weight:700;color:var(--n)}@media(prefers-color-scheme:dark){.big{color:var(--g)}}
+.sm{font-size:14px;opacity:.8}
+button.b{background:var(--n);color:#fff;border:2px solid var(--g);border-radius:12px;padding:12px 16px;font-size:17px;font-weight:600;margin:3px 3px 3px 0}
+button.g{background:var(--g);color:#1a1a1a;border-color:var(--g)}button.r{background:var(--bad);border-color:var(--bad)}button.o{background:none;color:var(--t);border-color:var(--bd)}
+input,select,textarea{width:100%;padding:12px;border:1px solid var(--bd);border-radius:10px;font-size:17px;background:var(--c);color:var(--t);font-family:inherit}
+label{display:block;font-weight:600;margin:10px 0 4px}
+table{width:100%;border-collapse:collapse;font-size:15px}th{background:var(--n);color:var(--g);text-align:left;padding:8px}td{padding:8px;border-bottom:1px solid var(--bd)}.sc{overflow-x:auto}
+.tag{display:inline-block;padding:2px 10px;border-radius:99px;font-size:14px;font-weight:600}.t1{background:#d8f2e2;color:#14532d}.t2{background:#fff0c2;color:#6b4e00}.t3{background:#fde0de;color:#8c1d18}
+.bar{height:12px;background:var(--bd);border-radius:9px;overflow:hidden}.bar i{display:block;height:100%;background:var(--g)}
+.ov{position:fixed;inset:0;background:#000a;z-index:20;display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:16px}
+.ovb{background:var(--c);border-radius:14px;padding:14px;width:100%;max-width:560px}
+.toast{position:fixed;left:12px;right:12px;bottom:80px;z-index:30;background:var(--ok);color:#fff;padding:14px;border-radius:12px;font-weight:600}.toast.bad{background:var(--bad)}
+.empty{text-align:center;padding:30px 10px;opacity:.7}
+#pa{background:#fff;color:#000;padding:14px;border:2px solid #0b1f4b;border-radius:8px}#pa table th{background:#0b1f4b;color:#c9a227}#pa td{border-bottom:1px solid #bbb}
+@media print{.np{display:none!important}body{background:#fff}.ov{position:static;background:none;padding:0}.ovb{padding:0;max-width:none}main{padding:0}#pa{border:0}}
+</style></head><body><div id="root"></div>
+<script>
+const h=React.createElement,{useState,useEffect}=React;
+const T=t=>(p,...c)=>h(t,p,...c);
+const div=T('div'),b=T('button'),input=T('input'),select=T('select'),option=T('option'),label=T('label'),table=T('table'),thead=T('thead'),tbody=T('tbody'),tr=T('tr'),td=T('td'),th=T('th'),ta=T('textarea'),h2=T('h2'),h3=T('h3'),sp=T('span'),pp=T('p');
+const MN=['जनवरी','फ़रवरी','मार्च','अप्रैल','मई','जून','जुलाई','अगस्त','सितंबर','अक्टूबर','नवंबर','दिसंबर'];
+const fmt=n=>'₹'+(Math.round(n*100)/100).toLocaleString('en-IN');
+const ml=m=>MN[+m.slice(5)-1]+' '+m.slice(0,4);
+const pad=n=>String(n).padStart(2,'0');
+const curM=()=>{const x=new Date();return x.getFullYear()+'-'+pad(x.getMonth()+1)};
+const today=()=>{const x=new Date();return curM()+'-'+pad(x.getDate())};
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const dmy=s=>s.split('-').reverse().join('/');
+const METH=['नकद','UPI','बैंक ट्रांसफर','चेक','अन्य'];
+/* ---------- storage ---------- */
+const idb=new Promise((res,rej)=>{try{const r=indexedDB.open('vishi_samiti',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}catch(e){rej(e)}});
+const kvGet=async k=>{const d=await idb;return new Promise((res,rej)=>{const q=d.transaction('kv').objectStore('kv').get(k);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error)})};
+const kvSet=async(k,v)=>{const d=await idb;return new Promise((res,rej)=>{const t=d.transaction('kv','readwrite');t.objectStore('kv').put(v,k);t.oncomplete=res;t.onerror=()=>rej(t.error)})};
+const hashPw=async(pw,salt)=>{const k=await crypto.subtle.importKey('raw',new TextEncoder().encode(pw),'PBKDF2',false,['deriveBits']);return Array.from(new Uint8Array(await crypto.subtle.deriveBits({name:'PBKDF2',salt:new Uint8Array(salt),iterations:150000,hash:'SHA-256'},k,256))).join(',')};
+const mkAuth=async pw=>{const salt=Array.from(crypto.getRandomValues(new Uint8Array(16)));return{salt,hash:await hashPw(pw,salt)}};
+const dl=async(name,data,mime)=>{const blob=new Blob([data],{type:mime||'application/octet-stream'});try{const D=window.claude&&await claude.use('downloads');if(D){await D.save({filename:name,data:blob});return 1}}catch(e){if(e&&e.code==='declined')return 0}
+const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;document.body.appendChild(a);a.click();a.remove();return 1};
+const xl=(name,sheet,rows)=>{const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,XLSX.utils.json_to_sheet(rows),sheet);return dl(name,XLSX.write(wb,{bookType:'xlsx',type:'array'}),'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')};
+const PCSS='body{font-family:system-ui,"Noto Sans Devanagari",Mangal,sans-serif;padding:16px}table{width:100%;border-collapse:collapse}th,td{border:1px solid #888;padding:6px;text-align:left}th{background:#0b1f4b;color:#c9a227}';
+const htmlSave=(name)=>dl(name+'.html','<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><style>'+PCSS+'</style>'+document.getElementById('pa').outerHTML,'text/html');
+const doPrint=flash=>{try{window.print()}catch(e){flash('प्रिंट नहीं खुला — "HTML फ़ाइल" डाउनलोड करके ब्राउज़र से प्रिंट करें',1)}};
+/* ---------- calculations ---------- */
+const amtFor=(s,mo)=>{let a=s.fees[0].amount;for(const f of s.fees)if(f.from<=mo)a=f.amount;return a};
+const dueOf=(s,m,mo)=>m.custom!=null&&m.custom!==''?+m.custom:amtFor(s,mo);
+const act=x=>x.st!=='रद्द';
+const paidOf=(d,id,mo)=>d.payments.filter(x=>x.mid===id&&x.mo===mo&&act(x)).reduce((a,x)=>a+x.amt,0);
+const monthsOf=s=>{const r=[],c=curM();let[y,m]=s.start.split('-').map(Number);for(let i=0;i<240;i++){const k=y+'-'+pad(m);if(k>c)break;r.push(k);if(++m>12){m=1;y++}}return r};
+const stOf=(pd,du)=>pd>=du?['जमा','t1']:pd>0?['आंशिक','t2']:['बाकी','t3'];
+const owed=(d,m)=>monthsOf(d.settings).reduce((a,mo)=>a+Math.max(0,dueOf(d.settings,m,mo)-paidOf(d,m.id,mo)),0);
+const sumry=d=>{let due=0,paid=0,full=0,rem=0;const ms=monthsOf(d.settings);for(const m of d.members)for(const mo of ms){const du=dueOf(d.settings,m,mo),pd=Math.min(paidOf(d,m.id,mo),du);due+=du;paid+=pd;pd>=du?full++:rem++}return{due,paid,full,rem,left:due-paid}};
+const mem=(d,id)=>d.members.find(x=>x.id===id)||{no:'-',name:'(हटाया गया)'};
+/* ---------- small UI ---------- */
+const Fld=(l,c)=>div(null,label(null,l),c);
+const Tag=([t,c])=>sp({className:'tag '+c},t);
+const Empty=t=>div({className:'empty'},div({style:{fontSize:42}},'📭'),t);
+function Modal({children}){return div({className:'ov'},div({className:'ovb'},children))}
+/* ---------- login ---------- */
+function Login({auth,onOk,flash}){const[pw,setPw]=useState(''),[p2,setP2]=useState(''),[busy,setBusy]=useState(false);
+const go=async()=>{if(busy)return;if(!auth){if(pw.length<6)return flash('पासवर्ड कम से कम 6 अक्षर का रखें',1);if(pw!==p2)return flash('दोनों पासवर्ड एक जैसे नहीं हैं',1)}
+setBusy(true);try{if(!auth){const a=await mkAuth(pw);await kvSet('auth',a);onOk(a)}else{(await hashPw(pw,auth.salt))===auth.hash?onOk(auth):flash('पासवर्ड गलत है',1)}}catch(e){flash('त्रुटि: '+e.message,1)}setBusy(false)};
+return div({className:'card',style:{marginTop:30}},h2(null,auth?'🔐 एडमिन लॉगिन':'🔐 नया एडमिन पासवर्ड बनाएं'),
+!auth&&pp({className:'sm'},'पहली बार उपयोग: अपना पासवर्ड बनाएं। यह पासवर्ड भूल गए तो रीसेट के लिए बैकअप से डेटा बहाल करना होगा।'),
+Fld('पासवर्ड',input({type:'password',value:pw,onChange:e=>setPw(e.target.value),onKeyDown:e=>e.key==='Enter'&&auth&&go()})),
+!auth&&Fld('पासवर्ड दोबारा',input({type:'password',value:p2,onChange:e=>setP2(e.target.value)})),
+b({className:'b g',style:{width:'100%',marginTop:14},onClick:go,disabled:busy},auth?'लॉगिन करें':'पासवर्ड सेट करें'),
+pp({className:'sm'},'⚠️ यह केवल इस फ़ोन/ब्राउज़र पर लगने वाला पासवर्ड-स्क्रीन है; अत्यंत संवेदनशील डेटा के लिए पर्याप्त सुरक्षा नहीं। पासवर्ड एन्क्रिप्टेड (PBKDF2 हैश) रूप में सहेजा जाता है, सादे रूप में नहीं।'))}
+/* ---------- dashboard ---------- */
+function Dash({C}){const{d}=C,s=sumry(d),ms=monthsOf(d.settings),cm=curM(),thisM=d.payments.filter(x=>act(x)&&x.date.slice(0,7)===cm).reduce((a,x)=>a+x.amt,0);
+if(!d.members.length)return div(null,Empty('अभी कोई सदस्य नहीं जुड़ा है।'),div({style:{textAlign:'center'}},b({className:'b g',onClick:()=>C.setPg('mem')},'➕ पहला सदस्य जोड़ें')));
+const card=(l,v)=>div({className:'card'},div({className:'sm'},l),div({className:'big'},v));const pc=s.due?Math.round(s.paid/s.due*100):0;
+return div(null,div({className:'grid'},card('कुल सदस्य संख्या',d.members.length+' / '+d.settings.count),card('कुल जमा किश्तें',s.full),card('कुल जमा राशि',fmt(s.paid)),card('बाकी किश्तें',s.rem),card('बाकी राशि',fmt(s.left)),card('इस महीने का भुगतान',fmt(thisM))),
+div({className:'card',style:{marginTop:12}},h3(null,'जमा और बाकी का विवरण'),div({className:'bar'},h('i',{style:{width:pc+'%'}})),pp({className:'sm'},pc+'% राशि जमा · '+fmt(s.paid)+' जमा, '+fmt(s.left)+' बाकी (कुल देय '+fmt(s.due)+')'),
+div({className:'sc'},table(null,thead(null,tr(null,th(null,'माह'),th(null,'देय'),th(null,'जमा'),th(null,'बाकी'))),tbody(null,[...ms].reverse().map(mo=>{let du=0,pd=0;d.members.forEach(m=>{const a=dueOf(d.settings,m,mo);du+=a;pd+=Math.min(paidOf(d,m.id,mo),a)});return tr({key:mo},td(null,ml(mo)),td(null,fmt(du)),td(null,fmt(pd)),td(null,fmt(du-pd)))})))))) }
+/* ---------- members ---------- */
+function Members({C}){const{d,save,flash,ask}=C,[q,setQ]=useState(''),[f,setF]=useState(null);const cm=curM();
+const blank=()=>({no:String(Math.max(0,...d.members.map(x=>+x.no||0))+1),name:'',father:'',mobile:'',note:'',custom:''});
+const sv=async()=>{const n=Math.floor(+f.no);if(!(n>0))return flash('सदस्य संख्या सही भरें',1);if(d.members.some(x=>+x.no===n&&x.id!==f.id))return flash('यह सदस्य संख्या पहले से मौजूद है',1);if(!f.name.trim())return flash('सदस्य का नाम ज़रूरी है',1);if(f.mobile&&!/^\d{10}$/.test(f.mobile))return flash('मोबाइल नंबर 10 अंकों का होना चाहिए',1);if(f.custom!==''&&!(+f.custom>0))return flash('अलग किश्त राशि 0 से अधिक होनी चाहिए',1);
+const m={...f,no:n,name:f.name.trim(),id:f.id||uid()};const ms=f.id?d.members.map(x=>x.id===f.id?m:x):[...d.members,m];
+if(f.id&&f.custom!==''&&d.payments.some(p=>p.mid===f.id&&act(p)&&p.amt>+f.custom))return flash('इस सदस्य के किसी माह का जमा, नई किश्त राशि से अधिक है',1);
+await save({...d,members:ms.sort((a,b)=>a.no-b.no)});setF(null);flash(f.id?'सदस्य की जानकारी सुधार दी गई':'सदस्य जोड़ दिया गया')};
+const del=m=>{if(d.payments.some(p=>p.mid===m.id))return flash('इस सदस्य के भुगतान दर्ज हैं, इसलिए हटाया नहीं जा सकता (रिकॉर्ड सुरक्षित रखने के लिए)',1);ask('क्या आप "'+m.name+'" को हटाना चाहते हैं?',async()=>{await save({...d,members:d.members.filter(x=>x.id!==m.id)});flash('सदस्य हटा दिया गया')})};
+const L=d.members.filter(m=>!q||m.name.toLowerCase().includes(q.toLowerCase())||(m.mobile||'').includes(q));const set=(k,v)=>setF({...f,[k]:v});
+return div(null,div({className:'card'},input({placeholder:'🔍 नाम या मोबाइल से खोजें',value:q,onChange:e=>setQ(e.target.value)}),b({className:'b g',style:{marginTop:8},onClick:()=>setF(blank())},'➕ नया सदस्य')),
+f&&Modal(h3(null,f.id?'सदस्य संपादित करें':'नया सदस्य'),Fld('सदस्य संख्या *',input({type:'number',value:f.no,onChange:e=>set('no',e.target.value)})),Fld('नाम *',input({value:f.name,onChange:e=>set('name',e.target.value)})),Fld('पिता / पति का नाम',input({value:f.father,onChange:e=>set('father',e.target.value)})),Fld('मोबाइल नंबर',input({type:'tel',maxLength:10,value:f.mobile,onChange:e=>set('mobile',e.target.value.replace(/\D/g,''))})),Fld('अलग किश्त राशि (खाली = सामान्य राशि)',input({type:'number',value:f.custom==null?'':f.custom,onChange:e=>set('custom',e.target.value)})),Fld('टिप्पणी',ta({rows:2,value:f.note,onChange:e=>set('note',e.target.value)})),div({style:{marginTop:12}},b({className:'b g',onClick:sv},'💾 सहेजें'),b({className:'b o',onClick:()=>setF(null)},'रद्द'))),
+!d.members.length?Empty('अभी कोई सदस्य नहीं है। "नया सदस्य" दबाकर जोड़ें।'):!L.length?Empty('कोई सदस्य नहीं मिला।'):L.map(m=>{const du=dueOf(d.settings,m,cm),pd=paidOf(d,m.id,cm);return div({className:'card',key:m.id},div({style:{display:'flex',justifyContent:'space-between'}},div(null,h3({style:{margin:0}},'#'+m.no+' '+m.name),div({className:'sm'},(m.father?m.father+' · ':'')+(m.mobile||'मोबाइल नहीं'))),Tag(stOf(pd,du))),
+div({className:'sm'},'इस माह: '+fmt(pd)+' / '+fmt(du)+(m.custom?' (विशेष राशि)':'')+' · कुल बाकी: '+fmt(owed(d,m))),m.note&&div({className:'sm'},'📝 '+m.note),
+div({style:{marginTop:6}},b({className:'b g',onClick:()=>{C.setPre(m.id);C.setPg('pay')}},'💰 भुगतान'),b({className:'b',onClick:()=>{C.setHf({m:m.id,mo:'',s:''});C.setPg('hist')}},'📜 इतिहास'),b({className:'b o',onClick:()=>setF({...m,custom:m.custom==null?'':m.custom})},'✏️'),b({className:'b r',onClick:()=>del(m)},'🗑️')))}))}
+/* ---------- receipt ---------- */
+function Receipt({C,id}){const{d}=C,i=d.payments.findIndex(x=>x.id===id),p=d.payments[i];if(!p)return null;const m=mem(d,p.mid);
+const upto=d.payments.filter((x,j)=>j<=i&&x.mid===p.mid&&x.mo===p.mo&&act(x)).reduce((a,x)=>a+x.amt,0),du=m.id?dueOf(d.settings,m,p.mo):0;
+const row=(k,v)=>tr(null,td({style:{width:'45%',fontWeight:600}},k),td(null,v));
+return Modal(div({id:'pa'},div({style:{textAlign:'center',borderBottom:'3px double #c9a227',paddingBottom:8}},h2({style:{margin:0,color:'#0b1f4b'}},d.settings.name),div(null,'भुगतान रसीद'+(p.st==='रद्द'?' — रद्द':''))),
+table({style:{marginTop:10}},tbody(null,row('रसीद नंबर',p.rn),row('भुगतान तिथि',dmy(p.date)),row('सदस्य','#'+m.no+' '+m.name),m.father&&row('पिता / पति',m.father),row('किश्त माह',ml(p.mo)),row('जमा राशि',h('b',null,fmt(p.amt))),row('भुगतान विधि',p.meth+(p.ref?' ('+p.ref+')':'')),row('इस माह की किश्त',fmt(du)),row('इस माह बाकी (इस भुगतान के बाद)',fmt(Math.max(0,du-upto))),m.id&&row('कुल बाकी राशि (आज तक)',fmt(owed(d,m))),p.note&&row('टिप्पणी',p.note))),
+div({style:{marginTop:30,textAlign:'right'}},'हस्ताक्षर (कोषाध्यक्ष) ________________')),
+div({className:'np',style:{marginTop:10}},b({className:'b g',onClick:()=>doPrint(C.flash)},'🖨️ प्रिंट / PDF'),b({className:'b',onClick:()=>htmlSave('रसीद-'+p.rn)},'⬇️ HTML फ़ाइल'),b({className:'b o',onClick:()=>C.setRc(null)},'बंद करें')))}
+/* ---------- payments ---------- */
+function Pay({C}){const{d,save,flash,setRc,pre}=C,ms=monthsOf(d.settings);const[f,setF]=useState({mid:pre||'',mo:curM(),amt:'',date:today(),meth:'नकद',ref:'',note:''}),[busy,setBusy]=useState(false);
+const m=d.members.find(x=>x.id===f.mid),du=m?dueOf(d.settings,m,f.mo):0,pd=m?paidOf(d,m.id,f.mo):0,bal=Math.max(0,du-pd),set=(k,v)=>setF({...f,[k]:v});
+const go=async()=>{if(busy)return;if(!m)return flash('पहले सदस्य चुनें',1);const amt=Math.round(+f.amt*100)/100;if(!(amt>0))return flash('राशि 0 से अधिक भरें',1);if(amt>bal+0.001)return flash('राशि इस माह की बाकी राशि ('+fmt(bal)+') से अधिक नहीं हो सकती',1);
+if(!f.date||isNaN(new Date(f.date))||f.date>today())return flash('सही तिथि चुनें (आने वाली तिथि मान्य नहीं)',1);
+const ref=f.ref.trim();if(ref&&d.payments.some(x=>act(x)&&x.ref&&x.ref.toLowerCase()===ref.toLowerCase()))return flash('यह संदर्भ/ट्रांज़ैक्शन नंबर पहले से दर्ज है — दोहरा भुगतान रोका गया',1);
+if(!ref&&d.payments.some(x=>act(x)&&x.mid===f.mid&&x.mo===f.mo&&x.amt===amt&&x.date===f.date&&x.meth===f.meth))return flash('ऐसा ही भुगतान पहले से दर्ज है। अगर यह अलग भुगतान है तो संदर्भ नंबर भरें।',1);
+setBusy(true);const rc=d.settings.rc+1,p={id:uid(),rn:'VS-'+String(rc).padStart(5,'0'),mid:f.mid,mo:f.mo,amt,date:f.date,meth:f.meth,ref,note:f.note.trim(),st:'मान्य',ts:Date.now()};
+await save({...d,settings:{...d.settings,rc},payments:[...d.payments,p]});setBusy(false);flash('✅ भुगतान दर्ज हुआ — रसीद '+p.rn);setRc(p.id);setF({...f,amt:'',ref:'',note:''})};
+if(!d.members.length)return Empty('भुगतान दर्ज करने के लिए पहले सदस्य जोड़ें।');
+return div({className:'card'},h3(null,'💰 किश्त जमा करें'),Fld('सदस्य',select({value:f.mid,onChange:e=>set('mid',e.target.value)},option({value:''},'— चुनें —'),d.members.map(x=>option({key:x.id,value:x.id},'#'+x.no+' '+x.name)))),
+Fld('किश्त माह',select({value:f.mo,onChange:e=>set('mo',e.target.value)},[...ms].reverse().map(x=>option({key:x,value:x},ml(x))))),
+m&&div({className:'card',style:{marginTop:10,background:'var(--bg)'}},'देय: '+fmt(du)+' · जमा: '+fmt(pd)+' · ',h('b',null,'बाकी: '+fmt(bal))),
+Fld('जमा राशि (₹)',input({type:'number',inputMode:'decimal',value:f.amt,placeholder:m?'बाकी '+bal:'',onChange:e=>set('amt',e.target.value)})),m&&bal>0&&b({className:'b o',onClick:()=>set('amt',String(bal))},'पूरी बाकी राशि भरें'),
+Fld('भुगतान तिथि',input({type:'date',max:today(),value:f.date,onChange:e=>set('date',e.target.value)})),Fld('भुगतान विधि',select({value:f.meth,onChange:e=>set('meth',e.target.value)},METH.map(x=>option({key:x},x)))),
+Fld('संदर्भ / ट्रांज़ैक्शन नंबर (वैकल्पिक)',input({value:f.ref,onChange:e=>set('ref',e.target.value)})),Fld('टिप्पणी',input({value:f.note,onChange:e=>set('note',e.target.value)})),
+b({className:'b g',style:{width:'100%',marginTop:14},disabled:busy||(m&&bal<=0),onClick:go},m&&bal<=0?'इस माह की किश्त पूरी जमा है':'✅ भुगतान दर्ज करें'))}
+/* ---------- history ---------- */
+function Hist({C}){const{d,save,flash,hf,setHf,setRc}=C,ms=monthsOf(d.settings);const[ed,setEd]=useState(null);
+const L=[...d.payments].reverse().filter(p=>(!hf.m||p.mid===hf.m)&&(!hf.mo||p.mo===hf.mo)&&(!hf.s||p.st===hf.s));const tot=L.filter(act).reduce((a,x)=>a+x.amt,0);
+const apply=async()=>{const{p,mode}=ed;const reason=(ed.reason||'').trim();if(!reason)return flash('कारण लिखना ज़रूरी है',1);let np;
+if(mode==='cancel')np={...p,st:'रद्द'};else{const amt=Math.round(+ed.amt*100)/100,m=mem(d,p.mid),others=paidOf(d,p.mid,p.mo)-(act(p)?p.amt:0);if(!(amt>0))return flash('राशि 0 से अधिक भरें',1);if(m.id&&amt+others>dueOf(d.settings,m,p.mo)+0.001)return flash('राशि माह की किश्त से अधिक हो जाएगी',1);if(!ed.date||ed.date>today())return flash('सही तिथि चुनें',1);np={...p,amt,date:ed.date,meth:ed.meth,st:'संशोधित'}}
+await save({...d,payments:d.payments.map(x=>x.id===p.id?np:x),audit:[...(d.audit||[]),{ts:Date.now(),act:mode==='cancel'?'रद्द':'सुधार',rn:p.rn,before:{amt:p.amt,date:p.date,meth:p.meth,st:p.st},after:{amt:np.amt,date:np.date,meth:np.meth,st:np.st},reason}]});setEd(null);flash('परिवर्तन दर्ज हुआ (ऑडिट लॉग में सुरक्षित)')};
+const sh=(k,v)=>setEd({...ed,[k]:v});
+return div(null,div({className:'card'},h3(null,'📜 भुगतान इतिहास'),Fld('सदस्य',select({value:hf.m,onChange:e=>setHf({...hf,m:e.target.value})},option({value:''},'सभी'),d.members.map(x=>option({key:x.id,value:x.id},'#'+x.no+' '+x.name)))),Fld('माह',select({value:hf.mo,onChange:e=>setHf({...hf,mo:e.target.value})},option({value:''},'सभी'),[...ms].reverse().map(x=>option({key:x,value:x},ml(x))))),Fld('स्थिति',select({value:hf.s,onChange:e=>setHf({...hf,s:e.target.value})},option({value:''},'सभी'),['मान्य','संशोधित','रद्द'].map(x=>option({key:x},x)))),pp({className:'sm'},L.length+' रिकॉर्ड · मान्य कुल '+fmt(tot))),
+ed&&Modal(h3(null,ed.mode==='cancel'?'भुगतान रद्द करें':'भुगतान सुधारें'),pp({className:'sm'},ed.p.rn+' · '+mem(d,ed.p.mid).name),ed.mode!=='cancel'&&div(null,Fld('राशि',input({type:'number',value:ed.amt,onChange:e=>sh('amt',e.target.value)})),Fld('तिथि',input({type:'date',max:today(),value:ed.date,onChange:e=>sh('date',e.target.value)})),Fld('विधि',select({value:ed.meth,onChange:e=>sh('meth',e.target.value)},METH.map(x=>option({key:x},x))))),Fld('कारण *',input({value:ed.reason||'',onChange:e=>sh('reason',e.target.value)})),div({style:{marginTop:12}},b({className:'b g',onClick:apply},'पुष्टि करें'),b({className:'b o',onClick:()=>setEd(null)},'बंद'))),
+!d.payments.length?Empty('अभी कोई भुगतान दर्ज नहीं है।'):!L.length?Empty('इन फ़िल्टर से कोई रिकॉर्ड नहीं मिला।'):L.map(p=>div({className:'card',key:p.id},div({style:{display:'flex',justifyContent:'space-between'}},h('b',null,'#'+mem(d,p.mid).no+' '+mem(d,p.mid).name),h('b',{style:{textDecoration:p.st==='रद्द'?'line-through':'none'}},fmt(p.amt))),div({className:'sm'},dmy(p.date)+' · '+ml(p.mo)+' · '+p.meth+' · '+p.rn+' · '+p.st),
+div(null,b({className:'b o',onClick:()=>setRc(p.id)},'🧾 रसीद'),p.st!=='रद्द'&&b({className:'b o',onClick:()=>setEd({p,mode:'edit',amt:p.amt,date:p.date,meth:p.meth})},'✏️ सुधारें'),p.st!=='रद्द'&&b({className:'b r',onClick:()=>setEd({p,mode:'cancel'})},'रद्द')))),
+(d.audit||[]).length>0&&div({className:'card'},h3(null,'🔎 ऑडिट लॉग (सुधार/रद्द)'),[...d.audit].reverse().slice(0,30).map((a,i)=>div({key:i,className:'sm',style:{borderBottom:'1px solid var(--bd)',padding:'6px 0'}},new Date(a.ts).toLocaleString('hi-IN')+' · '+a.rn+' · '+a.act+': '+fmt(a.before.amt)+' → '+(a.act==='रद्द'?'रद्द':fmt(a.after.amt))+' · कारण: '+a.reason))))}
+/* ---------- reports ---------- */
+function Reports({C}){const{d,flash}=C,ms=monthsOf(d.settings),[v,setV]=useState(''),[mo,setMo]=useState(curM());
+const noD=!d.members.length;const s=sumry(d);
+const exM=()=>xl('सदस्य-सूची.xlsx','सदस्य',d.members.map(m=>({'सदस्य संख्या':m.no,'नाम':m.name,'पिता/पति':m.father||'','मोबाइल':m.mobile||'','विशेष किश्त':m.custom||'','कुल बाकी':owed(d,m),'टिप्पणी':m.note||''})));
+const exP=()=>xl('भुगतान-इतिहास.xlsx','भुगतान',d.payments.map(p=>({'रसीद नंबर':p.rn,'तारीख':dmy(p.date),'सदस्य संख्या':mem(d,p.mid).no,'नाम':mem(d,p.mid).name,'किश्त माह':ml(p.mo),'राशि':p.amt,'भुगतान विधि':p.meth,'संदर्भ':p.ref||'','स्थिति':p.st,'टिप्पणी':p.note||''})));
+const rows=d.members.map(m=>{const du=dueOf(d.settings,m,mo),pd=Math.min(paidOf(d,m.id,mo),du);return{m,du,pd}});
+return div(null,div({className:'card np'},h3(null,'📊 रिपोर्ट व एक्सपोर्ट'),pp({className:'sm'},'कुल जमा '+fmt(s.paid)+' · कुल बाकी '+fmt(s.left)),b({className:'b g',disabled:noD,onClick:exM},'⬇️ सदस्य सूची (Excel)'),b({className:'b g',disabled:!d.payments.length,onClick:exP},'⬇️ भुगतान इतिहास (Excel)'),b({className:'b',disabled:noD,onClick:()=>setV('m')},'🖨️ सदस्य सूची (PDF/प्रिंट)'),b({className:'b',disabled:noD,onClick:()=>setV('s')},'🖨️ जमा / बाकी रिपोर्ट (PDF)'),
+v==='s'&&Fld('माह',select({value:mo,onChange:e=>setMo(e.target.value)},[...ms].reverse().map(x=>option({key:x,value:x},ml(x))))),v&&div({style:{marginTop:8}},b({className:'b g',onClick:()=>doPrint(flash)},'🖨️ प्रिंट / PDF सहेजें'),b({className:'b',onClick:()=>htmlSave('रिपोर्ट')},'⬇️ HTML फ़ाइल'))),
+noD&&Empty('रिपोर्ट के लिए सदस्य जोड़ें।'),
+v==='m'&&div({id:'pa'},h2({style:{textAlign:'center',color:'#0b1f4b'}},d.settings.name+' — सदस्य सूची'),div({className:'sc'},table(null,thead(null,tr(null,['सं.','नाम','पिता/पति','मोबाइल','कुल बाकी'].map(x=>th({key:x},x)))),tbody(null,d.members.map(m=>tr({key:m.id},td(null,m.no),td(null,m.name),td(null,m.father||''),td(null,m.mobile||''),td(null,fmt(owed(d,m))))))))),
+v==='s'&&div({id:'pa'},h2({style:{textAlign:'center',color:'#0b1f4b'}},d.settings.name+' — '+ml(mo)+' जमा/बाकी रिपोर्ट'),div({className:'sc'},table(null,thead(null,tr(null,['सं.','नाम','देय','जमा','बाकी','स्थिति'].map(x=>th({key:x},x)))),tbody(null,rows.map(({m,du,pd})=>tr({key:m.id},td(null,m.no),td(null,m.name),td(null,fmt(du)),td(null,fmt(pd)),td(null,fmt(du-pd)),td(null,stOf(pd,du)[0]))),tr(null,td({colSpan:2},h('b',null,'कुल')),td(null,h('b',null,fmt(rows.reduce((a,r)=>a+r.du,0)))),td(null,h('b',null,fmt(rows.reduce((a,r)=>a+r.pd,0)))),td(null,h('b',null,fmt(rows.reduce((a,r)=>a+r.du-r.pd,0)))),td(null,'')))))))}
+/* ---------- settings ---------- */
+function Settings({C}){const{d,save,flash,ask,auth,setAuth}=C,s=d.settings;const[nm,setNm]=useState(s.name),[cnt,setCnt]=useState(s.count),[amt,setAmt]=useState(amtFor(s,curM())),[from,setFrom]=useState(curM()),[st,setSt]=useState(s.start),[op,setOp]=useState(''),[np,setNp]=useState('');const fr=useState(null)[0];
+const sv=async()=>{if(!nm.trim())return flash('समिति का नाम भरें',1);if(!(+cnt>0))return flash('सदस्य संख्या सही भरें',1);if(!(+amt>0))return flash('किश्त राशि 0 से अधिक भरें',1);if(st>curM())return flash('शुरुआती माह भविष्य का नहीं हो सकता',1);if(from<st)return flash('नई राशि का माह शुरुआती माह से पहले नहीं हो सकता',1);
+let fees=s.fees.filter(f=>f.from!==from);if(+amt!==amtFor({fees:s.fees},from)||s.fees.some(f=>f.from===from))fees.push({from,amount:+amt});fees.sort((a,b)=>a.from<b.from?-1:1);if(fees[0].from>st)fees.unshift({from:st,amount:s.fees[0].amount});
+await save({...d,settings:{...s,name:nm.trim(),count:+cnt,start:st,fees}});flash('सेटिंग सहेजी गईं')};
+const bk=()=>dl('vishi-samiti-backup-'+today()+'.json',JSON.stringify({app:'vishi-samiti',v:1,at:new Date().toISOString(),data:d}),'application/json');
+const imp=e=>{const fl=e.target.files[0];e.target.value='';if(!fl)return;const r=new FileReader();r.onload=()=>{try{const j=JSON.parse(r.result);const x=j.data;if(j.app!=='vishi-samiti'||!x||!Array.isArray(x.members)||!Array.isArray(x.payments)||!x.settings||!Array.isArray(x.settings.fees)||!x.settings.fees.length)throw 0;ask('⚠️ बैकअप ('+x.members.length+' सदस्य, '+x.payments.length+' भुगतान) लोड करने पर वर्तमान सारा डेटा बदल जाएगा। आगे बढ़ें?',async()=>{await save({...x,audit:x.audit||[]});flash('बैकअप सफलतापूर्वक बहाल हुआ')})}catch(_){flash('यह सही बैकअप फ़ाइल नहीं है',1)}};r.readAsText(fl)};
+const cp=async()=>{if(np.length<6)return flash('नया पासवर्ड कम से कम 6 अक्षर का रखें',1);if((await hashPw(op,auth.salt))!==auth.hash)return flash('वर्तमान पासवर्ड गलत है',1);const a=await mkAuth(np);await kvSet('auth',a);setAuth(a);setOp('');setNp('');flash('पासवर्ड बदल गया')};
+return div(null,div({className:'card'},h3(null,'⚙️ समिति सेटिंग'),Fld('समिति का नाम',input({value:nm,onChange:e=>setNm(e.target.value)})),Fld('निर्धारित सदस्य संख्या',input({type:'number',value:cnt,onChange:e=>setCnt(e.target.value)})),Fld('शुरुआती माह (पहली किश्त)',input({type:'month',value:st,max:curM(),onChange:e=>setSt(e.target.value)})),Fld('मासिक किश्त राशि (₹)',input({type:'number',value:amt,onChange:e=>setAmt(e.target.value)})),Fld('यह राशि किस माह से लागू',input({type:'month',value:from,onChange:e=>setFrom(e.target.value)})),pp({className:'sm'},'पुराने माह की किश्तें नहीं बदलतीं, सिर्फ़ चुने माह से आगे की। सदस्य-विशेष राशि सदस्य संपादन में बदलें।'),b({className:'b g',onClick:sv},'💾 सहेजें')),
+div({className:'card'},h3(null,'💾 बैकअप'),pp({className:'sm'},'⚠️ डेटा केवल इसी फ़ोन/ब्राउज़र में सहेजा जाता है और अपने-आप किसी दूसरे डिवाइस या ऑनलाइन सिंक/बैकअप नहीं होता। ब्राउज़र डेटा साफ़ करने से रिकॉर्ड मिट सकते हैं — नियमित बैकअप डाउनलोड करें और सुरक्षित जगह (Drive/WhatsApp) रखें।'),b({className:'b g',onClick:bk},'⬇️ बैकअप डाउनलोड'),label({className:'b o',style:{display:'inline-block',border:'2px solid var(--bd)',borderRadius:12,padding:'12px 16px',fontWeight:600}},'⬆️ बैकअप से बहाल करें',input({type:'file',accept:'.json,application/json',style:{display:'none'},onChange:imp}))),
+div({className:'card'},h3(null,'🔐 सुरक्षा'),Fld('वर्तमान पासवर्ड',input({type:'password',value:op,onChange:e=>setOp(e.target.value)})),Fld('नया पासवर्ड',input({type:'password',value:np,onChange:e=>setNp(e.target.value)})),b({className:'b',onClick:cp},'पासवर्ड बदलें'),b({className:'b o',onClick:C.logout},'लॉग आउट'),
+pp({className:'sm'},'ध्यान दें: यह पासवर्ड स्क्रीन केवल फ्रंटएंड है — कोई तकनीकी व्यक्ति ब्राउज़र टूल से डेटा देख सकता है। असली सुरक्षा (कई उपयोगकर्ता, सर्वर पर लॉगिन, एन्क्रिप्टेड ऑनलाइन डेटाबेस, ऑटो-बैकअप) के लिए बैकएंड चाहिए: जैसे Supabase/Firebase Auth + सुरक्षित डेटाबेस और HTTPS। अभी ऐसा कोई क्लाउड स्टोरेज इस ऐप में नहीं है। पासवर्ड भूलने पर बैकअप फ़ाइल से डेटा बहाल कर सकते हैं।')))}
+/* ---------- app ---------- */
+function App(){const[st,setSt]=useState('load'),[auth,setAuth]=useState(null),[d,setD]=useState(null),[pg,setPg]=useState('dash'),[toast,setToast]=useState(null),[dlg,setDlg]=useState(null),[rc,setRc]=useState(null),[pre,setPre]=useState(''),[hf,setHf]=useState({m:'',mo:'',s:''});
+const flash=(m,bad)=>{setToast({m,bad});setTimeout(()=>setToast(null),4000)};
+useEffect(()=>{(async()=>{try{const a=await kvGet('auth');let x=await kvGet('data');if(!x){const c=curM();x={members:[],payments:[],audit:[],settings:{name:'विशी समिति',count:27,start:c,fees:[{from:c,amount:2704}],rc:0}}}setD(x);setAuth(a||null);setSt(a?'login':'setup')}catch(e){setSt('err')}})()},[]);
+const save=async nd=>{setD(nd);try{await kvSet('data',nd)}catch(e){flash('सहेजने में त्रुटि: '+e.message,1)}};
+const C={d,save,flash,ask:(m,fn)=>setDlg({m,fn}),setPg,setRc,pre,setPre,hf,setHf,auth,setAuth,logout:()=>{setSt('login');setPg('dash')}};
+const NAV=[['dash','🏠','डैशबोर्ड'],['mem','👥','सदस्य'],['pay','💰','भुगतान'],['hist','📜','इतिहास'],['rep','📊','रिपोर्ट'],['set','⚙️','सेटिंग']];
+if(st==='load')return div({className:'empty'},'लोड हो रहा है…');
+if(st==='err')return div({className:'card'},h3(null,'⚠️ स्टोरेज उपलब्ध नहीं'),pp(null,'यह ब्राउज़र डेटा सहेजने (IndexedDB) की अनुमति नहीं दे रहा (शायद प्राइवेट/इन्कॉग्निटो मोड)। सामान्य मोड में खोलें।'));
+const P={dash:Dash,mem:Members,pay:Pay,hist:Hist,rep:Reports,set:Settings}[pg];
+return h(React.Fragment,null,h('header',{className:'np'},'🏛️ '+(d?d.settings.name:'')+' किश्त प्रबंधन सिस्टम'),
+h('main',null,st!=='in'?h(Login,{auth,flash,onOk:a=>{setAuth(a);setSt('in')}}):h('div',{className:rc?'np':''},h(P,{C,key:pg+(pg==='pay'?pre:'')}))),
+st==='in'&&h('nav',{className:'np'},NAV.map(([k,i,l])=>b({key:k,className:pg===k?'on':'',onClick:()=>{if(k!=='pay')setPre('');setPg(k)}},sp(null,i),l))),
+st==='in'&&rc&&h(Receipt,{C,id:rc}),
+dlg&&Modal(pp(null,dlg.m),b({className:'b r',onClick:()=>{const f=dlg.fn;setDlg(null);f()}},'हाँ, आगे बढ़ें'),b({className:'b o',onClick:()=>setDlg(null)},'नहीं')),
+toast&&div({className:'toast np'+(toast.bad?' bad':'')},toast.m))}
+ReactDOM.createRoot(document.getElementById('root')).render(h(App));
+</script></body></html>
